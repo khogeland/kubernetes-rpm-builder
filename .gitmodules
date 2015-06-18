@@ -1,0 +1,3 @@
+[submodule "rpmbuild/kubernetes"]
+	path = rpmbuild/kubernetes
+	url = git@github.com:GoogleCloudPlatform/kubernetes.git
