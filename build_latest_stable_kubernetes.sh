@@ -2,10 +2,23 @@
 
 # sudo yum install rpm-build golang etcd -y
 # sudo yum groupinstall "Development Tools" -y
+# by default it builds the latest kubernetes version shown in git tag
+# optionally you can specify ./build_latest_stable_kubernetes.sh v0.18.2
 
-# Find the latest tagged stable release in the master branch
+# Find the latest tagged stable release in the master branch, or use $1 tag
 cd kubernetes; git checkout master &> /dev/null; git reset --hard &> /dev/null; git pull &> /dev/null;
-latest_stable_kubernetes_version=`git describe --abbrev=0 --tags|cut -c 2-`
+if [ $# -eq 0 ]
+  then
+    latest_stable_kubernetes_version=`git describe --abbrev=0 --tags|cut -c 2-`
+  else
+    if [ $1 = `git tag -l $1` ]
+      then
+        latest_stable_kubernetes_version=`echo $1|cut -c 2-`
+      else
+        echo "That is not a valid kubernetes version tag."
+        exit 1
+    fi
+fi
 latest_stable_kubernetes_commit="`git rev-list v${latest_stable_kubernetes_version}  | head -n 1`"
 short_commit=`echo $latest_stable_kubernetes_commit | cut -c1-7`
 cd ..;
