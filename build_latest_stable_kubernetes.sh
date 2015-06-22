@@ -38,6 +38,8 @@ tar -c kubernetes --transform s/kubernetes/kubernetes-$latest_stable_kubernetes_
 echo -e "Starting the compilation of kubernetes version: $latest_stable_kubernetes_version \n\n\n"
 rpmbuild -ba --define "_topdir `pwd`/rpmbuild" rpmbuild/SPECS/kubernetes.spec
 
+cd kubernetes; git checkout master &> /dev/null; cd ..;
+
 if [ $? -eq 0 ]
 then
   rpm_file=`ls rpmbuild/RPMS/*/kubernetes*`
