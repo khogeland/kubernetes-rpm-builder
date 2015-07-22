@@ -342,6 +342,8 @@ done
 %config(noreplace) %{_sysconfdir}/%{name}/kubelet
 %config(noreplace) %{_sysconfdir}/%{name}/scheduler
 %{_tmpfilesdir}/kubernetes.conf
+%attr(755,kube,kube) /var/run/kubernetes
+
 
 %if 0%{?fedora}
 %files devel
