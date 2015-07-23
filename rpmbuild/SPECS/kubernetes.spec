@@ -278,6 +278,8 @@ echo "******Testing integration******"
 . hack/lib/init.sh
 kube::golang::setup_env
 
+mkdir -p $RPM_BUILD_ROOT/var/run/kubernetes
+
 output_path="${KUBE_OUTPUT_BINPATH}/$(kube::golang::current_platform)"
 
 binaries=(kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet kubectl)
@@ -342,6 +344,8 @@ done
 %config(noreplace) %{_sysconfdir}/%{name}/kubelet
 %config(noreplace) %{_sysconfdir}/%{name}/scheduler
 %{_tmpfilesdir}/kubernetes.conf
+
+%dir /var/run/kubernetes
 %attr(755,kube,kube) /var/run/kubernetes
 
 
