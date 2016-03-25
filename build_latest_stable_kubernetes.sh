@@ -6,19 +6,22 @@
 # optionally you can specify ./build_latest_stable_kubernetes.sh v0.18.2
 
 # Find the latest tagged stable release in the master branch, or use $1 tag
-cd kubernetes; git checkout master &> /dev/null; git reset --hard &> /dev/null; git pull &> /dev/null;
+cd kubernetes; git checkout master &> /dev/null; git clean  -d  -fx "" &> /dev/null; git reset --hard &> /dev/null; git pull &> /dev/null;
 if [ $# -eq 0 ]
   then
     latest_stable_kubernetes_version=`git describe --abbrev=0 --tags|cut -c 2-`
   else
     if [ $1 = `git tag -l $1` ]
       then
+        git reset HEAD --hard
+        git checkout "$1" | tail -n 1
         latest_stable_kubernetes_version=`echo $1|cut -c 2-`
       else
         echo "That is not a valid kubernetes version tag."
         exit 1
     fi
 fi
+cd contrib; git reset --hard &> /dev/null; git pull &> /dev/null; cd ..;
 latest_stable_kubernetes_commit="`git rev-list v${latest_stable_kubernetes_version}  | head -n 1`"
 short_commit=`echo $latest_stable_kubernetes_commit | cut -c1-7`
 cd ..;
@@ -26,7 +29,7 @@ cd ..;
 # update the rpm spec file with the latest stable version and commit
 sed -i "s/^Version:.*/Version:        ${latest_stable_kubernetes_version}/" rpmbuild/SPECS/kubernetes.spec
 sed -i "s/^%global commit.*/%global commit          ${latest_stable_kubernetes_commit}/" rpmbuild/SPECS/kubernetes.spec
-sed -i "s/^export KUBE_GIT_VERSION=.*/KUBE_GIT_VERSION=${latest_stable_kubernetes_version-${short_commit}}/" rpmbuild/SPECS/kubernetes.spec
+sed -i "s/^export KUBE_GIT_VERSION=.*/export KUBE_GIT_VERSION=${latest_stable_kubernetes_version-${short_commit}}/" rpmbuild/SPECS/kubernetes.spec
 
 # clean up any old builds. tar up the latest stable commit, and throw it into rpmbuild/SOURCES, and prepare for the build
 cd kubernetes; git checkout $latest_stable_kubernetes_commit &> /dev/null; cd ..;

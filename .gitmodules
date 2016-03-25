@@ -1,3 +1,6 @@
 [submodule "kubernetes"]
 	path = kubernetes
 	url = https://github.com/GoogleCloudPlatform/kubernetes.git 
+[submodule "contrib"]
+	path = contrib
+	url = https://github.com/kubernetes/contrib

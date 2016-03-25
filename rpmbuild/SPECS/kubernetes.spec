@@ -5,7 +5,7 @@
 %global project		GoogleCloudPlatform
 %global repo		kubernetes
 %global import_path	%{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit          6b0d4ffed36adb0e2585333f01a553ab3e0970fd
+%global commit          5cb86ee022267586db386f62781338b0483733b3
 %global shortcommit	%(c=%{commit}; echo ${c:0:7})
 
 #I really need this, otherwise "version_ldflags=$(kube::version_ldflags)"
@@ -14,7 +14,7 @@
 %global _checkshell	/bin/bash
 
 Name:		kubernetes
-Version:        v0.19.0
+Version:        1.2.0
 Release:	git%{shortcommit}%{?dist}
 Summary:	Container cluster management
 License:	ASL 2.0
@@ -27,7 +27,7 @@ Source0:	https://github.com/GoogleCloudPlatform/kubernetes/archive/%{commit}/kub
 Obsoletes:      cadvisor
 
 %if 0%{?fedora} >= 21 || 0%{?rhel}
-Requires:	docker
+Requires:	docker-engine
 %else
 Requires:	docker-io
 %endif
@@ -240,9 +240,10 @@ building other packages which use %{project}/%{repo}.
 %autosetup -n %{name}-%{commit} -p1
 
 %build
+echo `pwd`
 export KUBE_GIT_TREE_STATE="clean"
 export KUBE_GIT_COMMIT=%{commit}
-export KUBE_GIT_VERSION=v0.19.0
+export KUBE_GIT_VERSION=1.2.0
 
 %if 0%{?fedora}
 #export KUBE_GIT_TREE_STATE="dirty"
@@ -261,7 +262,7 @@ hack/build-go.sh --use_go_build
 echo "******Testing the commands*****"
 # run the test only if /fs/sys/cgroup is mounted
 if [ -d /sys/fs/cgroup ]; then
-	hack/test-cmd.sh
+    hack/test-cmd.sh
 fi
 echo "******Benchmarking kube********"
 hack/benchmark-go.sh
@@ -275,6 +276,9 @@ echo "******Testing integration******"
 %endif
 
 %install
+
+export CONTRIB=../../../contrib
+
 . hack/lib/init.sh
 kube::golang::setup_env
 
@@ -295,11 +299,11 @@ install -t %{buildroot}%{_datadir}/bash-completion/completions/ contrib/completi
 
 # install config files
 install -d -m 0755 %{buildroot}%{_sysconfdir}/%{name}
-install -m 644 -t %{buildroot}%{_sysconfdir}/%{name} contrib/init/systemd/environ/*
+install -m 644 -t %{buildroot}%{_sysconfdir}/%{name} $CONTRIB/init/systemd/environ/*
 
 # install service files
 install -d -m 0755 %{buildroot}%{_unitdir}
-install -m 0644 -t %{buildroot}%{_unitdir} contrib/init/systemd/*.service
+install -m 0644 -t %{buildroot}%{_unitdir} $CONTRIB/init/systemd/*.service
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -308,14 +312,14 @@ install -p -m 644 docs/man/man1/* %{buildroot}%{_mandir}/man1
 # install the place the kubelet defaults to put volumes
 install -d %{buildroot}/var/lib/kubelet
 
-# place contrib/init/systemd/tmpfiles.d/kubernetes.conf to /usr/lib/tmpfiles.d/kubernetes.conf
+# place $CONTRIB/init/systemd/tmpfiles.d/kubernetes.conf to /usr/lib/tmpfiles.d/kubernetes.conf
 install -d -m 0755 %{buildroot}%{_tmpfilesdir}
-install -p -m 0644 -t %{buildroot}/%{_tmpfilesdir} contrib/init/systemd/tmpfiles.d/kubernetes.conf
+install -p -m 0644 -t %{buildroot}/%{_tmpfilesdir} $CONTRIB/init/systemd/tmpfiles.d/kubernetes.conf
 
 %if 0%{?fedora}
 # install devel source codes
 install -d %{buildroot}/%{gopath}/src/%{import_path}
-for d in build cluster cmd contrib examples hack pkg plugin test; do
+for d in build cluster cmd $CONTRIB examples hack pkg plugin test; do
     cp -rpav $d %{buildroot}/%{gopath}/src/%{import_path}/
 done
 %endif
