@@ -5,7 +5,7 @@
 %global project		GoogleCloudPlatform
 %global repo		kubernetes
 %global import_path	%{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit          5cb86ee022267586db386f62781338b0483733b3
+%global commit          c6411395e09da356c608896d3d9725acab821418
 %global shortcommit	%(c=%{commit}; echo ${c:0:7})
 
 #I really need this, otherwise "version_ldflags=$(kube::version_ldflags)"
@@ -14,7 +14,7 @@
 %global _checkshell	/bin/bash
 
 Name:		kubernetes
-Version:        1.2.0
+Version:        1.3.3
 Release:	git%{shortcommit}%{?dist}
 Summary:	Container cluster management
 License:	ASL 2.0
@@ -34,7 +34,7 @@ Requires:	docker-io
 
 Requires(pre):	shadow-utils
 
-BuildRequires:	golang >= 1.2-7
+#BuildRequires:	golang >= 1.2-7
 BuildRequires:	systemd
 BuildRequires:	etcd >= 2.0.8
 BuildRequires:	hostname
@@ -51,7 +51,7 @@ BuildRequires:	golang-cover
 %if 0%{?fedora}
 %package devel
 Summary:	%{summary}
-BuildRequires:	golang >= 1.2.1-3
+#BuildRequires:	golang >= 1.2.1-3
 
 %description devel
 %{summary}
@@ -243,7 +243,7 @@ building other packages which use %{project}/%{repo}.
 echo `pwd`
 export KUBE_GIT_TREE_STATE="clean"
 export KUBE_GIT_COMMIT=%{commit}
-export KUBE_GIT_VERSION=1.2.0
+export KUBE_GIT_VERSION=1.3.3
 
 %if 0%{?fedora}
 #export KUBE_GIT_TREE_STATE="dirty"
@@ -254,6 +254,9 @@ export KUBE_GIT_VERSION=1.2.0
 hack/build-go.sh --use_go_build
 
 %check
+#uncomment the exit 0 below to skip tests for build debugging
+#exit 0
+
 %if 0%{?fedora}
 #export KUBE_EXTRA_GOPATH=%{gopath}
 #export KUBE_NO_GODEPS="true"
@@ -292,10 +295,6 @@ for bin in "${binaries[@]}"; do
   echo "+++ INSTALLING ${bin}"
   install -p -m 755 -t %{buildroot}%{_bindir} ${output_path}/${bin}
 done
-
-# install the bash completion
-install -d -m 0755 %{buildroot}%{_datadir}/bash-completion/completions/
-install -t %{buildroot}%{_datadir}/bash-completion/completions/ contrib/completions/bash/kubectl
 
 # install config files
 install -d -m 0755 %{buildroot}%{_sysconfdir}/%{name}
@@ -338,8 +337,6 @@ done
 %{_unitdir}/kube-scheduler.service
 %{_unitdir}/kube-controller-manager.service
 %{_unitdir}/kube-proxy.service
-%dir %{_sysconfdir}/%{name}
-%{_datadir}/bash-completion/completions/kubectl
 %dir /var/lib/kubelet
 %config(noreplace) %{_sysconfdir}/%{name}/config
 %config(noreplace) %{_sysconfdir}/%{name}/apiserver
